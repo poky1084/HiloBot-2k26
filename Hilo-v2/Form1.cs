@@ -320,10 +320,11 @@ namespace Hilo_v2
             var url = mirror;
             var request = new RestRequest(Method.POST);
             var client = new RestClient(url);
-            client.CookieContainer = cc;
-            client.UserAgent = UserAgent;
-            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            //client.CookieContainer = cc;
+            //client.UserAgent = UserAgent;
+            //client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
             Payload payload = new Payload();
+            payload.token = token;
             payload.operationName = "UserBalances";
             payload.query = "query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n";
             request.AddHeader("Content-Type", "application/json");
@@ -412,10 +413,11 @@ namespace Hilo_v2
             var url = mirror;
             var request = new RestRequest(Method.POST);
             var client = new RestClient(url);
-            client.CookieContainer = cc;
-            client.UserAgent = UserAgent;
-            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            //client.CookieContainer = cc;
+            //client.UserAgent = UserAgent;
+            //client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
             Payload payload = new Payload();
+            payload.token = token;
             payload.operationName = "HiloActiveBet";
             payload.variables = new betobj() { };
             payload.query = "query HiloActiveBet {\n  user {\n    id\n    activeCasinoBet(game: hilo) {\n      ...CasinoBetFragment\n      state {\n        ...HiloStateFragment\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n";
@@ -560,10 +562,11 @@ namespace Hilo_v2
                 var url = mirror;
                 var request = new RestRequest(Method.POST);
                 var client = new RestClient(url);
-                client.CookieContainer = cc;
-                client.UserAgent = UserAgent;
-                client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+               // client.CookieContainer = cc;
+                //client.UserAgent = UserAgent;
+                //client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
                 Payload payload = new Payload();
+                payload.token = token;
                 payload.operationName = "HiloBet";
                 payload.variables = new betobj()
                 {
@@ -693,10 +696,11 @@ namespace Hilo_v2
                 var url = mirror;                
                 var request = new RestRequest(Method.POST);
                 var client = new RestClient(url);
-                client.CookieContainer = cc;
-                client.UserAgent = UserAgent;
-                client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+                //client.CookieContainer = cc;
+                //client.UserAgent = UserAgent;
+                //client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
                 Payload payload = new Payload();
+                payload.token = token;
                 payload.operationName = "HiloNext";
                 payload.variables = new betobj()
                 {
@@ -960,10 +964,11 @@ namespace Hilo_v2
             var url = mirror;
             var request = new RestRequest(Method.POST);
             var client = new RestClient(url);
-            client.CookieContainer = cc;
-            client.UserAgent = UserAgent;
-            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            //client.CookieContainer = cc;
+            //client.UserAgent = UserAgent;
+            //client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
             Payload payload = new Payload();
+            payload.token = token;
             payload.operationName = "HiloCashout";
             payload.variables = new betobj()
             {
@@ -1444,10 +1449,11 @@ namespace Hilo_v2
             var url = mirror;
             var request = new RestRequest(Method.POST);
             var client = new RestClient(url);
-            client.CookieContainer = cc;
-            client.UserAgent = UserAgent;
-            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            //client.CookieContainer = cc;
+            //client.UserAgent = UserAgent;
+            //client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
             Payload payload = new Payload();
+            payload.token = token;
             payload.operationName = "HiloBet";
             payload.variables = new betobj()
             {
@@ -1526,10 +1532,11 @@ namespace Hilo_v2
             var url = mirror;
             var request = new RestRequest(Method.POST);
             var client = new RestClient(url);
-            client.CookieContainer = cc;
-            client.UserAgent = UserAgent;
-            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            //client.CookieContainer = cc;
+            //client.UserAgent = UserAgent;
+            //client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
             Payload payload = new Payload();
+            payload.token = token;
             payload.operationName = "HiloNext";
             payload.variables = new betobj()
             {
@@ -1631,10 +1638,11 @@ namespace Hilo_v2
             var url = mirror;
             var request = new RestRequest(Method.POST);
             var client = new RestClient(url);
-            client.CookieContainer = cc;
-            client.UserAgent = UserAgent;
-            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            //client.CookieContainer = cc;
+           // client.UserAgent = UserAgent;
+           // client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
             Payload payload = new Payload();
+            payload.token = token;
             payload.operationName = "HiloCashout";
             payload.variables = new betobj()
             {
@@ -1747,10 +1755,11 @@ namespace Hilo_v2
             var url = mirror;
             var request = new RestRequest(Method.POST);
             var client = new RestClient(url);
-            client.CookieContainer = cc;
-            client.UserAgent = UserAgent;
-            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+           // client.CookieContainer = cc;
+            //client.UserAgent = UserAgent;
+           // client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
             Payload payload = new Payload();
+            payload.token = token;
             payload.operationName = "RotateSeedPair";
             payload.variables = new betobj()
             {
@@ -1923,7 +1932,7 @@ namespace Hilo_v2
             Seedxbets.Value = Properties.Settings.Default.Seedxbets;
             SeedxLose.Value = Properties.Settings.Default.SeedxLose ;
             SeedxWin.Value = Properties.Settings.Default.SeedxWin;
-            comboBox1.Text = Properties.Settings.Default.Mirror;
+            textBox5.Text = Properties.Settings.Default.Mirror;
             SeedBox3.Text = Properties.Settings.Default.clientseed;
 
             afterlosetreakOf.Value = Properties.Settings.Default.afterlosetreakOf;
@@ -1953,8 +1962,8 @@ namespace Hilo_v2
             RestBaseLosestreakCheck.Checked = Properties.Settings.Default.RestBaseLosestreakCheck;
             resetBaselosestreakOf.Value = Properties.Settings.Default.resetBaselosestreakOf;
 
-            textBox3.Text = Properties.Settings.Default.Cookie;
-            textBox4.Text = Properties.Settings.Default.Agent;
+            //textBox3.Text = Properties.Settings.Default.Cookie;
+           //textBox4.Text = Properties.Settings.Default.Agent;
         }
 
        
@@ -2085,9 +2094,9 @@ namespace Hilo_v2
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Properties.Settings.Default.Mirror = comboBox1.Text;
-            mirror = "https://" + comboBox1.Text + "/_api/graphql";
-            AddLog("Site changed to: " + comboBox1.Text);
+            //Properties.Settings.Default.Mirror = textBox5.Text;
+            //mirror = "http://localhost:5000/graphql?url=https://" + textBox5.Text + "/_api/graphql";
+            //AddLog("Site changed to: " + textBox5.Text);
         }
 
         private void textBox3_TextChanged(object sender, EventArgs e)
@@ -2355,16 +2364,22 @@ namespace Hilo_v2
 
         private void textBox3_TextChanged_1(object sender, EventArgs e)
         {
-            ClearanceCookie = textBox3.Text;
+            //ClearanceCookie = textBox3.Text;
             Properties.Settings.Default.Cookie = ClearanceCookie;
         }
 
         private void textBox4_TextChanged(object sender, EventArgs e)
         {
-            UserAgent = textBox4.Text;
+            //UserAgent = textBox4.Text;
             Properties.Settings.Default.Agent = UserAgent;
         }
- 
+
+        private void textBox5_TextChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.Mirror = textBox5.Text;
+            mirror = "http://localhost:5000/graphql?url=https://" + textBox5.Text + "/_api/graphql";
+            AddLog("Site changed to: " + textBox5.Text);
+        }
     }
     public static class ListViewExtensions
     {
