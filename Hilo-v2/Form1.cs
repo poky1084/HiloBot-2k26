@@ -349,7 +349,7 @@ namespace Hilo_v2
 
             });
             //System.Diagnostics.Debug.WriteLine(restResponse.Content);
-            if (restResponse.StatusCode == HttpStatusCode.OK)
+            if (restResponse != null)
             {
 
                 if (response.errors == null)
@@ -443,7 +443,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (restResponse.StatusCode == HttpStatusCode.OK)
+            if (response != null)
             {
                 if (response.errors == null)
                 {
@@ -604,7 +604,7 @@ namespace Hilo_v2
 
                 });
                 //Debug.WriteLine(restResponse.Content);
-                if (restResponse.StatusCode == HttpStatusCode.OK)
+                if (response != null)
                 {
                     if (response.errors == null)
                     {
@@ -734,7 +734,7 @@ namespace Hilo_v2
                 });
                 //Debug.WriteLine(restResponse.Content);
                 //button2.Enabled = true;
-                if (restResponse.StatusCode == HttpStatusCode.OK)
+                if (response != null)
                 {
 
                     if (response.errors == null)
@@ -999,7 +999,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (restResponse.StatusCode == HttpStatusCode.OK)
+            if (response != null)
             {
 
                 if (response.errors == null)
@@ -1490,7 +1490,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (restResponse.StatusCode == HttpStatusCode.OK)
+            if (response != null)
             {
                 if (response.errors == null)
                 {
@@ -1567,7 +1567,7 @@ namespace Hilo_v2
             });
             //Debug.WriteLine(restResponse.Content);
             //button2.Enabled = true;
-            if (restResponse.StatusCode == HttpStatusCode.OK)
+            if (response != null)
             {
 
                 if (response.errors == null)
@@ -1671,7 +1671,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (restResponse.StatusCode == HttpStatusCode.OK)
+            if (response != null)
             {
                 if (response.errors == null)
                 {
@@ -1788,7 +1788,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (restResponse.StatusCode == HttpStatusCode.OK)
+            if (response != null)
             {
                 if (response.errors == null)
                 {
