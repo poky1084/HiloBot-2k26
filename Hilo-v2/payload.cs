@@ -10,7 +10,7 @@ namespace Hilo_v2
     {
         public string operationName { get; set; }
         public string query { get; set; }
-        public betobj variables { get; set; }
+        public BetClass variables { get; set; }
         public string token { get; set; }
     }
 }

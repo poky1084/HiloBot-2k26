@@ -6,16 +6,14 @@ using System.Threading.Tasks;
 
 namespace Hilo_v2
 {
-    public class betobj
+    public class BetSend
     {
-        public string identifier { get; set; }
-        public decimal amount { get; set; }
-        public string currency { get; set; }
-        public string game { get; set; }
-        public string guess { get; set; }
-        public Card startCard { get; set; }
-        public string seed { get; set; }
+        public string operationName { get; set; }
+        public string query { get; set; }
+        public BetClass variables { get; set; }
+
     }
+  
     public class Card
     {
         public string rank { get; set; }
@@ -90,6 +88,21 @@ namespace Hilo_v2
         public string guess { get; set; }
         public double payoutMultiplier { get; set; }
         public string updatedAt { get; set; }
+
+    }
+    public class BetClass
+    {
+        public string identifier { get; set; }
+        public decimal amount { get; set; }
+        public string currency { get; set; }
+        public string game { get; set; }
+        public string guess { get; set; }
+        public int minesCount { get; set; }
+        public List<int> fields { get; set; }
+        public string seed { get; set; }
+        public string risk { get; set; }
+        public List<int> numbers { get; set; }
+        public Card startCard { get; set; }
 
     }
 }
