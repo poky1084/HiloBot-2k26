@@ -34,7 +34,6 @@ namespace Hilo_v2
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.ManualPage = new System.Windows.Forms.TabPage();
-            this.textBox5 = new System.Windows.Forms.TextBox();
             this.cbAutoCard = new System.Windows.Forms.CheckBox();
             this.label25 = new System.Windows.Forms.Label();
             this.tabControl2 = new System.Windows.Forms.TabControl();
@@ -188,7 +187,13 @@ namespace Hilo_v2
             this.label32 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.listView1 = new System.Windows.Forms.ListView();
+            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.textBox4 = new System.Windows.Forms.TextBox();
             this.label50 = new System.Windows.Forms.Label();
+            this.label51 = new System.Windows.Forms.Label();
+            this.label52 = new System.Windows.Forms.Label();
+            this.btnWebViewLogin = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.ManualPage.SuspendLayout();
             this.tabControl2.SuspendLayout();
@@ -257,7 +262,7 @@ namespace Hilo_v2
             this.textBox1.Location = new System.Drawing.Point(83, 675);
             this.textBox1.Margin = new System.Windows.Forms.Padding(4);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(551, 24);
+            this.textBox1.Size = new System.Drawing.Size(123, 24);
             this.textBox1.TabIndex = 1;
             this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
@@ -279,7 +284,7 @@ namespace Hilo_v2
             // 
             // ManualPage
             // 
-            this.ManualPage.Controls.Add(this.textBox5);
+            this.ManualPage.Controls.Add(this.comboBox1);
             this.ManualPage.Controls.Add(this.cbAutoCard);
             this.ManualPage.Controls.Add(this.label25);
             this.ManualPage.Controls.Add(this.tabControl2);
@@ -316,15 +321,6 @@ namespace Hilo_v2
             this.ManualPage.Text = "Manual/Auto";
             this.ManualPage.UseVisualStyleBackColor = true;
             // 
-            // textBox5
-            // 
-            this.textBox5.Location = new System.Drawing.Point(569, 235);
-            this.textBox5.Name = "textBox5";
-            this.textBox5.Size = new System.Drawing.Size(171, 26);
-            this.textBox5.TabIndex = 77;
-            this.textBox5.Text = "stake.com";
-            this.textBox5.TextChanged += new System.EventHandler(this.textBox5_TextChanged);
-            // 
             // cbAutoCard
             // 
             this.cbAutoCard.AutoSize = true;
@@ -343,9 +339,9 @@ namespace Hilo_v2
             this.label25.Location = new System.Drawing.Point(448, 238);
             this.label25.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(113, 20);
+            this.label25.Size = new System.Drawing.Size(119, 20);
             this.label25.TabIndex = 50;
-            this.label25.Text = "Stake mirror";
+            this.label25.Text = "Stake mirror:";
             // 
             // tabControl2
             // 
@@ -2390,6 +2386,28 @@ namespace Hilo_v2
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             // 
+            // textBox3
+            // 
+            this.textBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.textBox3.Location = new System.Drawing.Point(280, 676);
+            this.textBox3.Margin = new System.Windows.Forms.Padding(4);
+            this.textBox3.Name = "textBox3";
+            this.textBox3.Size = new System.Drawing.Size(83, 24);
+            this.textBox3.TabIndex = 22;
+            this.textBox3.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.textBox3.TextChanged += new System.EventHandler(this.textBox3_TextChanged_1);
+            // 
+            // textBox4
+            // 
+            this.textBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.textBox4.Location = new System.Drawing.Point(423, 674);
+            this.textBox4.Margin = new System.Windows.Forms.Padding(4);
+            this.textBox4.Name = "textBox4";
+            this.textBox4.Size = new System.Drawing.Size(67, 24);
+            this.textBox4.TabIndex = 23;
+            this.textBox4.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.textBox4.TextChanged += new System.EventHandler(this.textBox4_TextChanged);
+            // 
             // label50
             // 
             this.label50.AutoSize = true;
@@ -2401,12 +2419,60 @@ namespace Hilo_v2
             this.label50.TabIndex = 24;
             this.label50.Text = "apikey:";
             // 
+            // label51
+            // 
+            this.label51.AutoSize = true;
+            this.label51.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.label51.Location = new System.Drawing.Point(211, 677);
+            this.label51.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label51.Name = "label51";
+            this.label51.Size = new System.Drawing.Size(62, 20);
+            this.label51.TabIndex = 25;
+            this.label51.Text = "cookie:";
+            // 
+            // label52
+            // 
+            this.label52.AutoSize = true;
+            this.label52.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.label52.Location = new System.Drawing.Point(371, 678);
+            this.label52.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label52.Name = "label52";
+            this.label52.Size = new System.Drawing.Size(55, 20);
+            this.label52.TabIndex = 26;
+            this.label52.Text = "agent:";
+            // 
+            // btnWebViewLogin
+            // 
+            this.btnWebViewLogin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.btnWebViewLogin.Location = new System.Drawing.Point(518, 675);
+            this.btnWebViewLogin.Margin = new System.Windows.Forms.Padding(4);
+            this.btnWebViewLogin.Name = "btnWebViewLogin";
+            this.btnWebViewLogin.Size = new System.Drawing.Size(119, 28);
+            this.btnWebViewLogin.TabIndex = 27;
+            this.btnWebViewLogin.Text = "Cookie Get";
+            this.btnWebViewLogin.UseVisualStyleBackColor = true;
+            this.btnWebViewLogin.Click += new System.EventHandler(this.btnWebViewLogin_Click);
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.Location = new System.Drawing.Point(569, 237);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(171, 26);
+            this.comboBox1.TabIndex = 77;
+            this.comboBox1.Text = "stake.com";
+            this.comboBox1.TextChanged += new System.EventHandler(this.comboBox1_TextChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(765, 759);
+            this.ClientSize = new System.Drawing.Size(765, 732);
+            this.Controls.Add(this.btnWebViewLogin);
+            this.Controls.Add(this.label52);
+            this.Controls.Add(this.label51);
             this.Controls.Add(this.label50);
+            this.Controls.Add(this.textBox4);
+            this.Controls.Add(this.textBox3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.mainWager);
             this.Controls.Add(this.mainProfit);
@@ -2646,8 +2712,13 @@ namespace Hilo_v2
         private System.Windows.Forms.LinkLabel ResetCounterLabel;
         private System.Windows.Forms.LinkLabel ResetCountersLabel2;
         private System.Windows.Forms.CheckBox cbAutoCard;
+        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.Label label50;
-        private System.Windows.Forms.TextBox textBox5;
+        private System.Windows.Forms.Label label51;
+        private System.Windows.Forms.Label label52;
+        private System.Windows.Forms.Button btnWebViewLogin;
+        private System.Windows.Forms.TextBox comboBox1;
     }
 
 

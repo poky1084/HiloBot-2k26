@@ -1,13 +1,14 @@
-﻿using RestSharp;
+﻿using Keno;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json.Serialization;
-using System.Net;
 
 namespace Hilo_v2
 {
@@ -18,8 +19,7 @@ namespace Hilo_v2
             InitializeComponent();
             listView4.SetDoubleBuffered(true);
             Application.ApplicationExit += new EventHandler(Application_ApplicationExit);
-            BrowserFetch.StartServer();
-
+            
         }
         CookieContainer cc = new CookieContainer();
         private string UserAgent = "";
@@ -80,32 +80,6 @@ namespace Hilo_v2
             
             Properties.Settings.Default.Save();
 
-        }
-
-        private async Task<string> GraphQL(string operationName, string query,
-                                            BetClass variables = null)
-        {
-            var url = "https://" + mirror + "/_api/graphql";
-
-            var body = new BetSend
-            {
-                operationName = operationName,
-                query = query,
-                variables = variables
-            };
-
-            var options = new
-            {
-                method = "POST",
-                headers = new Dictionary<string, string>
-        {
-            { "Content-Type", "application/json" },
-            { "x-access-token", token }
-        },
-                body = body
-            };
-
-            return await BrowserFetch.FetchAsync(url, options);
         }
         private void ResetCounters()
         {
@@ -344,14 +318,28 @@ namespace Hilo_v2
         }
         private async void LogIn()
         {
-            var json = await GraphQL(
-            "UserBalances",
-            "query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
-        );
+            var url = "https://" + mirror + "/_api/graphql";
+            var request = new RestRequest(Method.POST);
+            var client = new RestClient(url);
+            client.CookieContainer = cc;
+            client.UserAgent = UserAgent;
+            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            Payload payload = new Payload();
+            payload.operationName = "UserBalances";
+            payload.query = "query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n";
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("x-access-token", token);
+
+            request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+            //request.AddJsonBody(payload);
+            //IRestResponse response = client.Execute(request);
+
+            var restResponse =
+                await client.ExecuteAsync(request);
 
             // Will output the HTML contents of the requested page
             //Debug.WriteLine(restResponse.Content);
-            ActiveData response = JsonConvert.DeserializeObject<ActiveData>(json, new JsonSerializerSettings
+            ActiveData response = JsonConvert.DeserializeObject<ActiveData>(restResponse.Content, new JsonSerializerSettings
             {
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
@@ -361,7 +349,7 @@ namespace Hilo_v2
 
             });
             //System.Diagnostics.Debug.WriteLine(restResponse.Content);
-            if (response != null)
+            if (restResponse.StatusCode == HttpStatusCode.OK)
             {
 
                 if (response.errors == null)
@@ -400,7 +388,7 @@ namespace Hilo_v2
             }
             else
             {
-                EditStatus("Error logging in.");
+                EditStatus("Error logging in. (Code:"+ restResponse.StatusCode+")");
                 textBox1.Enabled = true;
                 button1.Enabled = true;
                 loggedin = false;
@@ -422,15 +410,29 @@ namespace Hilo_v2
         }
         private async void activeHiloBet()
         {
-            var json = await GraphQL(
-            "HiloActiveBet",
-            "query HiloActiveBet {\n  user {\n    id\n    activeCasinoBet(game: hilo) {\n      ...CasinoBetFragment\n      state {\n        ...HiloStateFragment\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n"
-        );
-           
+            var url = "https://" + mirror + "/_api/graphql";
+            var request = new RestRequest(Method.POST);
+            var client = new RestClient(url);
+            client.CookieContainer = cc;
+            client.UserAgent = UserAgent;
+            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            Payload payload = new Payload();
+            payload.operationName = "HiloActiveBet";
+            payload.variables = new betobj() { };
+            payload.query = "query HiloActiveBet {\n  user {\n    id\n    activeCasinoBet(game: hilo) {\n      ...CasinoBetFragment\n      state {\n        ...HiloStateFragment\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n";
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("x-access-token", token);
+
+            request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+            //request.AddJsonBody(payload);
+            //IRestResponse response = client.Execute(request);
+
+            var restResponse =
+                await client.ExecuteAsync(request);
 
             // Will output the HTML contents of the requested page
             //Debug.WriteLine(restResponse.Content);
-            ActiveData response = JsonConvert.DeserializeObject<ActiveData>(json, new JsonSerializerSettings
+            ActiveData response = JsonConvert.DeserializeObject<ActiveData>(restResponse.Content, new JsonSerializerSettings
             {
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
@@ -440,7 +442,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (response != null)
+            if (restResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (response.errors == null)
                 {
@@ -497,7 +499,7 @@ namespace Hilo_v2
             }
             else
             {
-                EditStatus("Error getting Active game.");
+                EditStatus("Error getting Active game. (Code:" + restResponse.StatusCode + ")");
             }
 
         }
@@ -555,26 +557,41 @@ namespace Hilo_v2
             if (run == 1)
             {
                 lastProbability = "0.0x";
-                var json = await GraphQL(
-            "HiloBet",
-            "mutation HiloBet($amount: Float!, $currency: CurrencyEnum!, $startCard: HiloBetStartCardInput!) {\n  hiloBet(amount: $amount, currency: $currency, startCard: $startCard) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n",
-            new BetClass
-            {
-                currency = CurrencyList.Text,
-                amount = betamount,
-                startCard = new Card()
-                {
-                    suit = Properties.Settings.Default.AutoCard ? GetRandomCardColor() : suitBox2.Text,
-                    rank = Properties.Settings.Default.AutoCard ? GetRandomCardRank() : rankBox2.Text
-                }
-            }
-        );
 
-                
+                var url = "https://" + mirror + "/_api/graphql";
+                var request = new RestRequest(Method.POST);
+                var client = new RestClient(url);
+                client.CookieContainer = cc;
+                client.UserAgent = UserAgent;
+                client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+                Payload payload = new Payload();
+                payload.operationName = "HiloBet";
+                payload.variables = new betobj()
+                {
+                    currency = CurrencyList.Text,
+                    amount = betamount,
+                    startCard = new Card()
+                    {
+                        suit = Properties.Settings.Default.AutoCard ? GetRandomCardColor() : suitBox2.Text,
+                        rank = Properties.Settings.Default.AutoCard ? GetRandomCardRank() : rankBox2.Text
+                    }
+
+                };
+                payload.query = "mutation HiloBet($amount: Float!, $currency: CurrencyEnum!, $startCard: HiloBetStartCardInput!) {\n  hiloBet(amount: $amount, currency: $currency, startCard: $startCard) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n";
+                //request.RequestFormat = DataFormat.Json;
+                request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("x-access-token", token);
+
+                request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+                //request.AddJsonBody(payload);
+                //IRestResponse response = client.Execute(request);
+
+                var restResponse =
+                    await client.ExecuteAsync(request);
 
                 // Will output the HTML contents of the requested page
                 //Debug.WriteLine(restResponse.Content);
-                Data response = JsonConvert.DeserializeObject<Data>(json, new JsonSerializerSettings
+                Data response = JsonConvert.DeserializeObject<Data>(restResponse.Content, new JsonSerializerSettings
                 {
                     Error = delegate (object sender, ErrorEventArgs args)
                     {
@@ -585,7 +602,7 @@ namespace Hilo_v2
 
                 });
                 //Debug.WriteLine(restResponse.Content);
-                if (response != null)
+                if (restResponse.StatusCode == HttpStatusCode.OK)
                 {
                     if (response.errors == null)
                     {
@@ -649,7 +666,7 @@ namespace Hilo_v2
                 }
                 else
                 {
-                    EditStatus("HiloBet: Retrying in 2 sec.");
+                    EditStatus("HiloBet: Retrying in 2 sec. (Code:" + restResponse.StatusCode + ")");
 
                     await Task.Delay(2000);
                     HiloBet();
@@ -674,19 +691,33 @@ namespace Hilo_v2
             }
             if (run == 1)
             {
-                var json = await GraphQL(
-            "HiloNext",
-            "mutation HiloNext($guess: CasinoGameHiloGuessEnum!) {\n  hiloNext(guess: $guess) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n",
-            new BetClass
-            {
-                guess = guessed
-            }
-        );
-                
+                var url = "https://" + mirror + "/_api/graphql";
+                var request = new RestRequest(Method.POST);
+                var client = new RestClient(url);
+                client.CookieContainer = cc;
+                client.UserAgent = UserAgent;
+                client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+                Payload payload = new Payload();
+                payload.operationName = "HiloNext";
+                payload.variables = new betobj()
+                {
+                    guess = guessed
+                };
+                payload.query = "mutation HiloNext($guess: CasinoGameHiloGuessEnum!) {\n  hiloNext(guess: $guess) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n";
+
+                request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("x-access-token", token);
+
+                request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+                //request.AddJsonBody(payload);
+                //IRestResponse response = client.Execute(request);
+
+                var restResponse =
+                    await client.ExecuteAsync(request);
 
                 // Will output the HTML contents of the requested page
                 //Debug.WriteLine(restResponse.Content);
-                Data response = JsonConvert.DeserializeObject<Data>(json, new JsonSerializerSettings
+                Data response = JsonConvert.DeserializeObject<Data>(restResponse.Content, new JsonSerializerSettings
                 {
                     Error = delegate (object sender, ErrorEventArgs args)
                     {
@@ -700,7 +731,7 @@ namespace Hilo_v2
                 });
                 //Debug.WriteLine(restResponse.Content);
                 //button2.Enabled = true;
-                if (response != null)
+                if (restResponse.StatusCode == HttpStatusCode.OK)
                 {
 
                     if (response.errors == null)
@@ -907,7 +938,7 @@ namespace Hilo_v2
                 }
                 else
                 {
-                    EditStatus("HiloGuess: Retrying in 1 sec.");
+                    EditStatus("HiloGuess: Retrying in 1 sec. (Code:" + restResponse.StatusCode + ")");
 
                     await Task.Delay(1000);
                     var guess = Pattern(list.Count - 1);
@@ -926,19 +957,33 @@ namespace Hilo_v2
         }
         private async void HiloCashout()
         {
-            var json = await GraphQL(
-            "HiloCashout",
-            "mutation HiloCashout($identifier: String!) {\n  hiloCashout(identifier: $identifier) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n",
-            new BetClass
+
+            var url = "https://" + mirror + "/_api/graphql";
+            var request = new RestRequest(Method.POST);
+            var client = new RestClient(url);
+            client.CookieContainer = cc;
+            client.UserAgent = UserAgent;
+            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            Payload payload = new Payload();
+            payload.operationName = "HiloCashout";
+            payload.variables = new betobj()
             {
                 identifier = RandomString(20)
-            }
-        );
-            
+            };
+            payload.query = "mutation HiloCashout($identifier: String!) {\n  hiloCashout(identifier: $identifier) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n";
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("x-access-token", token);
+
+            request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+            //request.AddJsonBody(payload);
+            //IRestResponse response = client.Execute(request);
+
+            var restResponse =
+                await client.ExecuteAsync(request);
 
             // Will output the HTML contents of the requested page
             //Debug.WriteLine(restResponse.Content);
-            Data response = JsonConvert.DeserializeObject<Data>(json, new JsonSerializerSettings
+            Data response = JsonConvert.DeserializeObject<Data>(restResponse.Content, new JsonSerializerSettings
             {
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
@@ -950,7 +995,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (response != null)
+            if (restResponse.StatusCode == HttpStatusCode.OK)
             {
 
                 if (response.errors == null)
@@ -1066,7 +1111,7 @@ namespace Hilo_v2
             }
             else
             {
-                EditStatus("HiloCashout: Retrying in 2 sec.");
+                EditStatus("HiloCashout: Retrying in 2 sec. (Code:" + restResponse.StatusCode + ")");
 
                 await Task.Delay(2000);
                 HiloCashout();
@@ -1396,10 +1441,16 @@ namespace Hilo_v2
         }
         private async void ManualBet()
         {
-            var json = await GraphQL(
-            "HiloBet",
-            "mutation HiloBet($amount: Float!, $currency: CurrencyEnum!, $startCard: HiloBetStartCardInput!) {\n  hiloBet(amount: $amount, currency: $currency, startCard: $startCard) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n",
-            new BetClass
+
+            var url = "https://" + mirror + "/_api/graphql";
+            var request = new RestRequest(Method.POST);
+            var client = new RestClient(url);
+            client.CookieContainer = cc;
+            client.UserAgent = UserAgent;
+            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            Payload payload = new Payload();
+            payload.operationName = "HiloBet";
+            payload.variables = new betobj()
             {
                 currency = CurrencyList.Text,
                 amount = betamount,
@@ -1408,13 +1459,23 @@ namespace Hilo_v2
                     suit = Properties.Settings.Default.AutoCard ? GetRandomCardColor() : suitBox2.Text,
                     rank = Properties.Settings.Default.AutoCard ? GetRandomCardRank() : rankBox2.Text
                 }
-            }
-        );
-           
+
+            };
+            payload.query = "mutation HiloBet($amount: Float!, $currency: CurrencyEnum!, $startCard: HiloBetStartCardInput!) {\n  hiloBet(amount: $amount, currency: $currency, startCard: $startCard) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n";
+            //request.RequestFormat = DataFormat.Json;
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("x-access-token", token);
+
+            request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+            //request.AddJsonBody(payload);
+            //IRestResponse response = client.Execute(request);
+
+            var restResponse =
+                await client.ExecuteAsync(request);
 
             // Will output the HTML contents of the requested page
             //Debug.WriteLine(restResponse.Content);
-            Data response = JsonConvert.DeserializeObject<Data>(json, new JsonSerializerSettings
+            Data response = JsonConvert.DeserializeObject<Data>(restResponse.Content, new JsonSerializerSettings
             {
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
@@ -1424,7 +1485,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (response != null)
+            if (restResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (response.errors == null)
                 {
@@ -1457,24 +1518,39 @@ namespace Hilo_v2
             }
             else
             {
-                EditStatus("Bet failed, try again.");            
+                EditStatus("Bet failed, try again. (Code:" + restResponse.StatusCode + ")");            
             }
         }
         private async void ManualNext(string guessed)
         {
-            var json = await GraphQL(
-            "HiloNext",
-            "mutation HiloNext($guess: CasinoGameHiloGuessEnum!) {\n  hiloNext(guess: $guess) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n",
-            new BetClass
+
+            var url = "https://" + mirror + "/_api/graphql";
+            var request = new RestRequest(Method.POST);
+            var client = new RestClient(url);
+            client.CookieContainer = cc;
+            client.UserAgent = UserAgent;
+            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            Payload payload = new Payload();
+            payload.operationName = "HiloNext";
+            payload.variables = new betobj()
             {
                 guess = guessed
-            }
-        );
-            
+            };
+            payload.query = "mutation HiloNext($guess: CasinoGameHiloGuessEnum!) {\n  hiloNext(guess: $guess) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n";
+
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("x-access-token", token);
+
+            request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+            //request.AddJsonBody(payload);
+            //IRestResponse response = client.Execute(request);
+
+            var restResponse =
+                await client.ExecuteAsync(request);
 
             // Will output the HTML contents of the requested page
             //Debug.WriteLine(restResponse.Content);
-            Data response = JsonConvert.DeserializeObject<Data>(json, new JsonSerializerSettings
+            Data response = JsonConvert.DeserializeObject<Data>(restResponse.Content, new JsonSerializerSettings
             {
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
@@ -1485,7 +1561,7 @@ namespace Hilo_v2
             });
             //Debug.WriteLine(restResponse.Content);
             //button2.Enabled = true;
-            if (response != null)
+            if (restResponse.StatusCode == HttpStatusCode.OK)
             {
 
                 if (response.errors == null)
@@ -1544,7 +1620,7 @@ namespace Hilo_v2
             }
             else
             {
-                EditStatus("Guess failed, try again.");
+                EditStatus("Guess failed, try again. (Code:" + restResponse.StatusCode + ")");
 
             }
 
@@ -1552,19 +1628,33 @@ namespace Hilo_v2
         }
         private async void ManualCashout()
         {
-            var json = await GraphQL(
-            "HiloCashout",
-            "mutation HiloCashout($identifier: String!) {\n  hiloCashout(identifier: $identifier) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n",
-            new BetClass
+
+            var url = "https://" + mirror + "/_api/graphql";
+            var request = new RestRequest(Method.POST);
+            var client = new RestClient(url);
+            client.CookieContainer = cc;
+            client.UserAgent = UserAgent;
+            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            Payload payload = new Payload();
+            payload.operationName = "HiloCashout";
+            payload.variables = new betobj()
             {
                 identifier = RandomString(20)
-            }
-        );
-            
+            };
+            payload.query = "mutation HiloCashout($identifier: String!) {\n  hiloCashout(identifier: $identifier) {\n    ...CasinoBetFragment\n    state {\n      ...HiloStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment HiloStateFragment on CasinoGameHilo {\n  startCard {\n    suit\n    rank\n    __typename\n  }\n  rounds {\n    card {\n      suit\n      rank\n      __typename\n    }\n    guess\n    payoutMultiplier\n    __typename\n  }\n  __typename\n}\n";
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("x-access-token", token);
+
+            request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+            //request.AddJsonBody(payload);
+            //IRestResponse response = client.Execute(request);
+
+            var restResponse =
+                await client.ExecuteAsync(request);
 
             // Will output the HTML contents of the requested page
             //Debug.WriteLine(restResponse.Content);
-            Data response = JsonConvert.DeserializeObject<Data>(json, new JsonSerializerSettings
+            Data response = JsonConvert.DeserializeObject<Data>(restResponse.Content, new JsonSerializerSettings
             {
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
@@ -1574,7 +1664,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (response != null)
+            if (restResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (response.errors == null)
                 {
@@ -1627,7 +1717,7 @@ namespace Hilo_v2
             }
             else
             {
-                EditStatus("Cashout failed, try again.");
+                EditStatus("Cashout failed, try again. (Code:" + restResponse.StatusCode + ")");
 
             }
         }
@@ -1655,14 +1745,32 @@ namespace Hilo_v2
         private async Task RotateSeed()
         {
 
-            var json = await GraphQL(
-            "RotateSeedPair",
-            "mutation RotateSeedPair($seed: String!) {\n  rotateSeedPair(seed: $seed) {\n    clientSeed {\n      user {\n        id\n        activeClientSeed { id seed __typename }\n        activeServerSeed { id nonce seedHash nextSeedHash __typename }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
-            new BetClass { seed = RandomString(10) }
-        );
+            var url = "https://" + mirror + "/_api/graphql";
+            var request = new RestRequest(Method.POST);
+            var client = new RestClient(url);
+            client.CookieContainer = cc;
+            client.UserAgent = UserAgent;
+            client.CookieContainer.Add(new Cookie("cf_clearance", ClearanceCookie, "/", comboBox1.Text));
+            Payload payload = new Payload();
+            payload.operationName = "RotateSeedPair";
+            payload.variables = new betobj()
+            {
+                seed = RandomString(10)
+            };
+            payload.query = "mutation RotateSeedPair($seed: String!) {\n  rotateSeedPair(seed: $seed) {\n    clientSeed {\n      user {\n        id\n        activeClientSeed {\n          id\n          seed\n          __typename\n        }\n        activeServerSeed {\n          id\n          nonce\n          seedHash\n          nextSeedHash\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n";
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("x-access-token", token);
+
+            request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+            //request.AddJsonBody(payload);
+            //IRestResponse response = client.Execute(request);
+
+            var restResponse =
+                await client.ExecuteAsync(request);
+
             // Will output the HTML contents of the requested page
             //Debug.WriteLine(restResponse.Content);
-            Data response = JsonConvert.DeserializeObject<Data>(json, new JsonSerializerSettings
+            Data response = JsonConvert.DeserializeObject<Data>(restResponse.Content, new JsonSerializerSettings
             {
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
@@ -1672,7 +1780,7 @@ namespace Hilo_v2
 
             });
             //Debug.WriteLine(restResponse.Content);
-            if (response != null)
+            if (restResponse.StatusCode == HttpStatusCode.OK)
             {
                 if (response.errors == null)
                 {
@@ -1698,7 +1806,7 @@ namespace Hilo_v2
             }
             else
             {
-                EditStatus("Change seed failed.");
+                EditStatus("Change seed failed. (Code:" + restResponse.StatusCode + ")");
 
             }
         }
@@ -1816,7 +1924,7 @@ namespace Hilo_v2
             Seedxbets.Value = Properties.Settings.Default.Seedxbets;
             SeedxLose.Value = Properties.Settings.Default.SeedxLose ;
             SeedxWin.Value = Properties.Settings.Default.SeedxWin;
-            textBox5.Text = Properties.Settings.Default.Mirror;
+            comboBox1.Text = Properties.Settings.Default.Mirror;
             SeedBox3.Text = Properties.Settings.Default.clientseed;
 
             afterlosetreakOf.Value = Properties.Settings.Default.afterlosetreakOf;
@@ -1846,8 +1954,8 @@ namespace Hilo_v2
             RestBaseLosestreakCheck.Checked = Properties.Settings.Default.RestBaseLosestreakCheck;
             resetBaselosestreakOf.Value = Properties.Settings.Default.resetBaselosestreakOf;
 
-            //textBox3.Text = Properties.Settings.Default.Cookie;
-           //textBox4.Text = Properties.Settings.Default.Agent;
+            textBox3.Text = Properties.Settings.Default.Cookie;
+            textBox4.Text = Properties.Settings.Default.Agent;
         }
 
        
@@ -1978,9 +2086,7 @@ namespace Hilo_v2
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            //Properties.Settings.Default.Mirror = textBox5.Text;
-            //mirror = "http://localhost:5000/graphql?url=https://" + textBox5.Text + "/_api/graphql";
-            //AddLog("Site changed to: " + textBox5.Text);
+            
         }
 
         private void textBox3_TextChanged(object sender, EventArgs e)
@@ -2248,21 +2354,61 @@ namespace Hilo_v2
 
         private void textBox3_TextChanged_1(object sender, EventArgs e)
         {
-            //ClearanceCookie = textBox3.Text;
+            ClearanceCookie = textBox3.Text;
             Properties.Settings.Default.Cookie = ClearanceCookie;
         }
 
         private void textBox4_TextChanged(object sender, EventArgs e)
         {
-            //UserAgent = textBox4.Text;
+            UserAgent = textBox4.Text;
             Properties.Settings.Default.Agent = UserAgent;
         }
 
-        private void textBox5_TextChanged(object sender, EventArgs e)
+        private void btnWebViewLogin_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.Mirror = textBox5.Text;
-            mirror = textBox5.Text;
-            AddLog("Site changed to: " + textBox5.Text);
+            mirror = comboBox1.Text;
+            using (var loginForm = new WebViewLogin(mirror))
+            {
+                // ShowDialog blocks until user clicks Done (DialogResult.OK)
+                var result = loginForm.ShowDialog(this);
+
+                if (result == DialogResult.OK)
+                {
+                    // Apply captured values
+                    ClearanceCookie = loginForm.CapturedClearance;
+                    UserAgent = loginForm.CapturedUserAgent;
+
+                    // Update UI text fields
+                    textBox3.Text = ClearanceCookie;
+                    textBox4.Text = UserAgent;
+
+                    // Save to settings
+                    Properties.Settings.Default.Cookie = ClearanceCookie;
+                    Properties.Settings.Default.Agent = UserAgent;
+                    Properties.Settings.Default.Save();
+
+                    // Rebuild CookieContainer fresh
+                    cc = new CookieContainer();
+
+                    // Verify connection with new cookies
+                    SetToken(textBox1.Text);
+                    //LogIn();
+                    //await Authorize();
+                }
+                else
+                {
+                    
+                }
+            }
+        }
+
+        private void comboBox1_TextChanged(object sender, EventArgs e)
+        {
+            
+            mirror = comboBox1.Text;
+            Properties.Settings.Default.Mirror = comboBox1.Text;
+            mirror = comboBox1.Text;
+            //AddLog("Site changed to: " + comboBox1.Text);
         }
     }
     public static class ListViewExtensions
