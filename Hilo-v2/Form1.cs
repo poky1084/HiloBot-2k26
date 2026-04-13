@@ -138,7 +138,7 @@ namespace Hilo_v2
         private void UpdateCookieStatusLabel()
         {
             bool hasCookie = !string.IsNullOrWhiteSpace(ClearanceCookie);
-            lblCookieStatus.Text      = hasCookie ? "◯ Found" : "◯ Not found";
+            lblCookieStatus.Text      = hasCookie ? "Cookie OK" : "Cookie OFF";
             lblCookieStatus.ForeColor = hasCookie ? Color.Orange : Color.Gray;
         }
 
@@ -1028,7 +1028,7 @@ namespace Hilo_v2
                 bool already = BrowserFetch.IsConnected;
                 lblWsIndicator.ForeColor = already ? Color.LimeGreen : Color.Gray;
                 lblWsStatus.ForeColor    = already ? Color.LimeGreen : Color.Gray;
-                lblWsStatus.Text         = already ? "Connected" : "Not connected";
+                lblWsStatus.Text         = already ? "Extension OK" : "Extension OFF";
 
                 btnGetCookie.Visible    = false;
                 lblCookieStatus.Visible = false;
@@ -1042,7 +1042,7 @@ namespace Hilo_v2
 
                 lblWsIndicator.ForeColor = Color.Gray;
                 lblWsStatus.ForeColor    = Color.Gray;
-                lblWsStatus.Text         = "Not connected";
+                lblWsStatus.Text         = "Extension OFF";
 
                 lblWsIndicator.Visible  = false;
                 lblWsStatus.Visible     = false;
@@ -1078,7 +1078,7 @@ namespace Hilo_v2
             {
                 lblWsIndicator.ForeColor = Color.LimeGreen;
                 lblWsStatus.ForeColor    = Color.LimeGreen;
-                lblWsStatus.Text         = "Connected";
+                lblWsStatus.Text         = "Extension OK";
             }
             if (lblWsIndicator.InvokeRequired) lblWsIndicator.Invoke((MethodInvoker)Apply); else Apply();
         }
@@ -1089,7 +1089,7 @@ namespace Hilo_v2
             {
                 lblWsIndicator.ForeColor = Color.Gray;
                 lblWsStatus.ForeColor    = Color.Gray;
-                lblWsStatus.Text         = "Not connected";
+                lblWsStatus.Text         = "Extension OFF";
             }
             if (lblWsIndicator.InvokeRequired) lblWsIndicator.Invoke((MethodInvoker)Apply); else Apply();
         }
