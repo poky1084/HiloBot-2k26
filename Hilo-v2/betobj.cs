@@ -6,6 +6,24 @@ using System.Threading.Tasks;
 
 namespace Hilo_v2
 {
+    public class BetSend
+    {
+        public string operationName { get; set; }
+        public string query { get; set; }
+        public BetClass variables { get; set; }
+
+    }
+
+    public class BetClass
+    {
+        public string identifier { get; set; }
+        public decimal amount { get; set; }
+        public string currency { get; set; }
+        public string game { get; set; }
+        public string guess { get; set; }
+        public Card startCard { get; set; }
+        public string seed { get; set; }
+    }
     public class betobj
     {
         public string identifier { get; set; }
