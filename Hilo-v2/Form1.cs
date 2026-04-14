@@ -18,6 +18,10 @@ namespace Hilo_v2
         {
             InitializeComponent();
             listView4.SetDoubleBuffered(true);
+            listView1.OwnerDraw = true;
+            listView1.DrawColumnHeader += ListView1_DrawColumnHeader;
+            listView1.DrawItem        += ListView1_DrawItem;
+            listView1.DrawSubItem     += ListView1_DrawSubItem;
             Application.ApplicationExit += new EventHandler(Application_ApplicationExit);
             BrowserFetch.StartServer();
         }
@@ -184,6 +188,40 @@ namespace Hilo_v2
                 case "H": case "D": return Color.Red;
                 default: return Color.Black;
             }
+        }
+
+        // ─── ListView1 owner-draw: colour column headers by suit ─────────────────
+        private void ListView1_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            // Fill the header background normally
+            e.DrawBackground();
+
+            // Hearts (♡ \u2661) and Diamonds (♢ \u2662) → red; Clubs/Spades → near-black
+            bool isRed = e.Header.Text.IndexOf('\u2661') >= 0 || e.Header.Text.IndexOf('\u2662') >= 0;
+            Color textColor = isRed ? Color.Crimson : Color.FromArgb(30, 30, 30);
+
+            using (var brush = new SolidBrush(textColor))
+            using (var sf = new StringFormat
+            {
+                Alignment     = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center,
+                Trimming      = StringTrimming.None,
+                FormatFlags   = StringFormatFlags.NoWrap
+            })
+            {
+                e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                e.Graphics.DrawString(e.Header.Text, e.Font, brush, e.Bounds, sf);
+            }
+        }
+
+        private void ListView1_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
+        private void ListView1_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            e.DrawDefault = true;
         }
 
         private void UpdateStats()
