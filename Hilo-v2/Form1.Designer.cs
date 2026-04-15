@@ -172,6 +172,7 @@ namespace Hilo_v2
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.LogPage = new System.Windows.Forms.TabPage();
             this.LogView2 = new System.Windows.Forms.ListView();
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -2182,11 +2183,14 @@ namespace Hilo_v2
             this.columnHeader2,
             this.columnHeader3,
             this.columnHeader4,
-            this.columnHeader5});
+            this.columnHeader5,
+            this.columnHeader8});
+            this.listView4.FullRowSelect = true;
             this.listView4.HideSelection = false;
             this.listView4.Location = new System.Drawing.Point(4, 82);
             this.listView4.Margin = new System.Windows.Forms.Padding(4);
             this.listView4.Name = "listView4";
+            this.listView4.OwnerDraw = true;
             this.listView4.Size = new System.Drawing.Size(738, 374);
             this.listView4.TabIndex = 0;
             this.listView4.UseCompatibleStateImageBehavior = false;
@@ -2219,6 +2223,11 @@ namespace Hilo_v2
             // 
             this.columnHeader5.Text = "Cards";
             this.columnHeader5.Width = 150;
+            // 
+            // columnHeader8 — Bet ID ("View" link, owner-drawn)
+            // 
+            this.columnHeader8.Text = "Bet ID";
+            this.columnHeader8.Width = 50;
             // 
             // LogPage
             // 
@@ -2712,6 +2721,7 @@ namespace Hilo_v2
         private System.Windows.Forms.CheckBox cbAutoCard;
         private System.Windows.Forms.Label label50;
         private System.Windows.Forms.TextBox textBox5;
+        private System.Windows.Forms.ColumnHeader columnHeader8;
     }
 
 

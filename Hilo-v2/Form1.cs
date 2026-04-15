@@ -1,6 +1,7 @@
 using Keno;
 using RestSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -18,6 +19,11 @@ namespace Hilo_v2
         {
             InitializeComponent();
             listView4.SetDoubleBuffered(true);
+            listView4.OwnerDraw = true;
+            listView4.DrawColumnHeader += ListView4_DrawColumnHeader;
+            listView4.DrawItem         += ListView4_DrawItem;
+            listView4.DrawSubItem      += ListView4_DrawSubItem;
+            listView4.MouseClick       += ListView4_MouseClick;
             listView1.OwnerDraw = true;
             listView1.DrawColumnHeader += ListView1_DrawColumnHeader;
             listView1.DrawItem        += ListView1_DrawItem;
@@ -80,6 +86,8 @@ namespace Hilo_v2
         int stopafterlossesof = 0;
         int stopafterwinstreak = 0;
         int stopafterlosestreak = 0;
+
+        private readonly Dictionary<ListViewItem, string> _resolvedBetIids = new Dictionary<ListViewItem, string>();
 
         private void Application_ApplicationExit(object sender, EventArgs e)
         {
@@ -314,8 +322,10 @@ namespace Hilo_v2
                 decimal profit = response.data.hiloCashout.payout - ba;
                 double multi = response.data.hiloCashout.payoutMultiplier;
                 string cards = string.Join(",", list);
-                string[] row = { gamecount.ToString(), profit.ToString("0.00000000"), ba.ToString("0.00000000"), multi.ToString("0.00") + "x", cards, lastProbability, response.data.hiloCashout.updatedAt };
+                // [0]=#  [1]=Profit  [2]=Bet  [3]=Multiplier  [4]=Cards  [5]=Bet ID (link)
+                string[] row = { gamecount.ToString(), profit.ToString("0.00000000"), ba.ToString("0.00000000"), multi.ToString("0.00") + "x", cards, "View" };
                 var item = new ListViewItem(row) { Font = new Font("Consolas", 10f), BackColor = multi > 0 ? Color.LightGreen : Color.White };
+                item.Tag = response.data.hiloCashout.id;
                 listView4.Items.Insert(0, item);
                 if (listView4.Items.Count > 45) listView4.Items[listView4.Items.Count - 1].Remove();
             }
@@ -324,8 +334,9 @@ namespace Hilo_v2
                 decimal ba = response.data.hiloNext.amount;
                 double multi = response.data.hiloNext.state.rounds[response.data.hiloNext.state.rounds.Count - 1].payoutMultiplier;
                 string cards = string.Join(",", list).Replace(",", " ");
-                string[] row = { gamecount.ToString(), (-ba).ToString("0.00000000"), ba.ToString("0.00000000"), multi.ToString("0.00") + "x", cards, lastProbability, response.data.hiloNext.updatedAt };
+                string[] row = { gamecount.ToString(), (-ba).ToString("0.00000000"), ba.ToString("0.00000000"), multi.ToString("0.00") + "x", cards, "View" };
                 var item = new ListViewItem(row) { Font = new Font("Consolas", 10f) };
+                item.Tag = response.data.hiloNext.id;
                 listView4.Items.Insert(0, item);
                 if (listView4.Items.Count > 45) listView4.Items[listView4.Items.Count - 1].Remove();
             }
@@ -1139,6 +1150,176 @@ namespace Hilo_v2
             base.OnFormClosing(e);
         }
 
+
+        // ─── listView4 owner-draw (Bet ID / "View" link in last column) ─────────────
+
+        private void ListView4_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            e.DrawBackground();
+            using (var brush = new SolidBrush(SystemColors.ControlText))
+            using (var sf = new StringFormat { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.NoWrap })
+            {
+                var textBounds = new Rectangle(e.Bounds.X + 4, e.Bounds.Y, e.Bounds.Width - 4, e.Bounds.Height);
+                e.Graphics.DrawString(e.Header.Text, e.Font, brush, textBounds, sf);
+            }
+        }
+
+        private void ListView4_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            // Sub-item drawing handles everything.
+        }
+
+        private void ListView4_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            // Row background (preserves win/loss colour).
+            e.Graphics.FillRectangle(new SolidBrush(e.Item.BackColor), e.Bounds);
+
+            const int BET_ID_COL = 5;
+
+            if (e.ColumnIndex == BET_ID_COL)
+            {
+                bool resolved = _resolvedBetIids.TryGetValue(e.Item, out string iid);
+                string cellText  = resolved ? iid   : "View";
+                Color  linkColor = resolved ? Color.Black : Color.Blue;
+                using (var linkFont = new Font(e.SubItem.Font, FontStyle.Regular))
+                using (var brush    = new SolidBrush(linkColor))
+                {
+                    var fmt = new StringFormat { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center };
+                    e.Graphics.DrawString(cellText, linkFont, brush, e.Bounds, fmt);
+                }
+            }
+            else
+            {
+                using (var brush = new SolidBrush(e.Item.ForeColor))
+                {
+                    var fmt        = new StringFormat { LineAlignment = StringAlignment.Center };
+                    var textBounds = new Rectangle(e.Bounds.X + 2, e.Bounds.Y, e.Bounds.Width - 2, e.Bounds.Height);
+                    e.Graphics.DrawString(e.SubItem.Text, e.SubItem.Font, brush, textBounds, fmt);
+                }
+            }
+        }
+
+        private async void ListView4_MouseClick(object sender, MouseEventArgs e)
+        {
+            var info = listView4.HitTest(e.X, e.Y);
+            if (info.Item == null) return;
+
+            // Determine clicked column — prefer HitTest result, fall back to X-position scan.
+            int colIndex = -1;
+            if (info.SubItem != null)
+            {
+                colIndex = info.Item.SubItems.IndexOf(info.SubItem);
+            }
+            else
+            {
+                int x = 0;
+                for (int i = 0; i < listView4.Columns.Count; i++)
+                {
+                    x += listView4.Columns[i].Width;
+                    if (e.X < x) { colIndex = i; break; }
+                }
+            }
+
+            if (colIndex != 5) return;
+
+            string betId = info.Item.Tag as string;
+            if (string.IsNullOrEmpty(betId)) return;
+
+            listView4.Cursor = Cursors.WaitCursor;
+            string iid = null;
+            try   { iid = await FetchBetIid(betId); }
+            catch { }
+            finally { listView4.Cursor = Cursors.Default; }
+
+            // Fall back to opening by betId if IID could not be resolved.
+            if (string.IsNullOrEmpty(iid))
+            {
+                System.Diagnostics.Process.Start(string.Format("https://{0}/?betId={1}&modal=bet", mirror, betId));
+                return;
+            }
+
+            string cleanIid = iid.Replace("house:", "casino:");
+            string openUrl  = string.Format("https://{0}/?modal=bet&iid={1}", mirror, cleanIid);
+
+            _resolvedBetIids[info.Item] = cleanIid;
+
+            int needed = TextRenderer.MeasureText(cleanIid, listView4.Font).Width + 10;
+            if (needed > listView4.Columns[5].Width)
+                listView4.Columns[5].Width = 250;
+
+            listView4.Invalidate();
+
+            var menu      = new ContextMenuStrip();
+            var copyItem  = new ToolStripMenuItem(string.Format("📋  Copy IID:  {0}", cleanIid));
+            var openItem  = new ToolStripMenuItem("🌐  Open in browser");
+            copyItem.Click += (s, ev) => Clipboard.SetText(cleanIid);
+            openItem.Click += (s, ev) => System.Diagnostics.Process.Start(openUrl);
+            menu.Items.Add(copyItem);
+            menu.Items.Add(openItem);
+            menu.Show(listView4, new Point(e.X, e.Y));
+        }
+
+        /// <summary>
+        /// Resolves a numeric betId to its IID string via the GraphQL BetLookup query.
+        /// Returns null if the request fails or the IID is absent.
+        /// </summary>
+        private async Task<string> FetchBetIid(string betId)
+        {
+            try
+            {
+                var    url         = "https://" + mirror + "/_api/graphql";
+                bool   isExtension = cmbFetchMode.SelectedIndex == 1;
+                string json;
+                const  string gql  = "query BetLookup($iid: String, $betId: String) { bet(iid: $iid, betId: $betId) { iid } }";
+
+                if (isExtension)
+                {
+                    var body = new
+                    {
+                        operationName = "BetLookup",
+                        query         = gql,
+                        variables     = new { betId }
+                    };
+                    var options = new
+                    {
+                        method  = "POST",
+                        headers = new Dictionary<string, string>
+                        {
+                            { "Content-Type",   "application/json" },
+                            { "x-access-token", token              }
+                        },
+                        body
+                    };
+                    json = await BrowserFetch.FetchAsync(url, options);
+                }
+                else
+                {
+                    var client = new RestClient(url);
+                    client.CookieContainer = cc;
+                    client.UserAgent       = UserAgent;
+                    client.CookieContainer.Add(
+                        new System.Net.Cookie("cf_clearance", ClearanceCookie, "/", mirror));
+
+                    var payload = new
+                    {
+                        operationName = "BetLookup",
+                        query         = gql,
+                        variables     = new { betId }
+                    };
+                    var request = new RestRequest(Method.POST);
+                    request.AddHeader("Content-Type",   "application/json");
+                    request.AddHeader("x-access-token", token);
+                    request.AddParameter("application/json",
+                        JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+                    var resp = await client.ExecuteAsync(request);
+                    json = resp.Content;
+                }
+
+                var jObj = JObject.Parse(json);
+                return jObj["data"]?["bet"]?["iid"]?.ToString();
+            }
+            catch { return null; }
+        }
 
         // ─── Fetch-mode control declarations ─────────────────────────────────────
         private ComboBox cmbFetchMode;
